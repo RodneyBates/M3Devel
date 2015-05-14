@@ -67,6 +67,8 @@ FROM Cstdint IMPORT uint8_t, uint64_t;
  *)
 
 TYPE Bool = BOOLEAN;
+CONST False = FALSE;
+CONST True = TRUE;
 
 (* Opaque types. *)
 
@@ -419,6 +421,7 @@ PROCEDURE LLVMGetMDKindID(Name: const_char_star; SLen: unsigned): unsigned;
  * will be leaked.
  *)
 PROCEDURE LLVMModuleCreateWithName(ModuleID: const_char_star): ModuleRef;
+  (* PRE: ModuleID # NIL *) 
 
 (**
  * Create a new, empty module in a specific context.
@@ -428,6 +431,7 @@ PROCEDURE LLVMModuleCreateWithName(ModuleID: const_char_star): ModuleRef;
  *)
 PROCEDURE LLVMModuleCreateWithNameInContext(
     ModuleID: const_char_star; C: ContextRef): ModuleRef;
+  (* PRE: ModuleID # NIL *) 
 
 (**
  * Destroy a module instance.
@@ -556,6 +560,10 @@ PROCEDURE LLVMAddNamedMetadataOperand(M: ModuleRef; name: const_char_star;
  * @see llvm::Function::Create()
  *)
 PROCEDURE LLVMAddFunction(M: ModuleRef; Name: const_char_star;
+                      FunctionTy: TypeRef): ValueRef;
+
+<*EXTERNAL LLVMAddFunction*>
+PROCEDURE LLVMAddFunctionCHAR(M: ModuleRef; Name: UNTRACED REF CHAR;
                       FunctionTy: TypeRef): ValueRef;
 
 (**
@@ -753,8 +761,25 @@ PROCEDURE LLVMPPCFP128Type(): TypeRef;
  * parameter types, and whether the function is variadic.
  *)
 PROCEDURE LLVMFunctionType(ReturnType: TypeRef;
-                       ParamTypes: UNTRACED REF TypeRef; ParamCount: unsigned;
-                       IsVarArg: Bool): TypeRef;
+                       ParamTypes: UNTRACED REF TypeRef; 
+                       (* ^Actually, an array of TypeRef. *) 
+                       ParamCount: unsigned;
+                       IsVarArg: Bool := False): TypeRef;
+(* PRE: ReturnType # NIL *)
+(* PRE: ParamCount = 0 OR ParamCount elements of ParamTypes # NIL *) 
+(* PRE: All existing elements of ParamTypes are not llvm void. *) 
+
+<*EXTERNAL LLVMFunctionType*>
+PROCEDURE LLVMFunctionTypeSafe(ReturnType: TypeRef;
+                       READONLY ParamTypes: TypeRef; 
+                       (* ^Actually, an array of TypeRef. *) 
+                       (* READONLY, so it is passed by reference. *) 
+                       ParamCount: unsigned;
+                       IsVarArg: Bool := False): TypeRef;
+(* "Safe" means only that the unsafety is moved outside of Modula-3
+   code, where it can be inconvenient to deal with, to the unchecked matchup
+   between this binding and the external C code it links to.
+*) 
 
 (**
  * Returns whether a function type is variadic.
@@ -837,8 +862,21 @@ PROCEDURE LLVMGetStructName(Ty: TypeRef): const_char_star;
  *
  * @see llvm::StructType::setBody()
  *)
-PROCEDURE LLVMStructSetBody(StructTy: TypeRef; ElementTypes: UNTRACED REF TypeRef;
-                        ElementCount: unsigned; Packed: Bool := FALSE);
+PROCEDURE LLVMStructSetBody(StructTy: TypeRef; 
+                        ElementTypes: UNTRACED REF TypeRef;
+                        (* ^Actually, an array of TypeRef. *) 
+                        ElementCount: unsigned; Packed: Bool := False);
+
+<*EXTERNAL LLVMStructSetBody*>
+PROCEDURE LLVMStructSetBodySafe(StructTy: TypeRef; 
+                        READONLY ElementTypes: TypeRef;
+                        (* ^Actually, an array of TypeRef. *) 
+                        (* READONLY, so it is passed by reference. *) 
+                        ElementCount: unsigned; Packed: Bool := False);
+(* "Safe" means only that the unsafety is moved outside of Modula-3
+   code, where it can be inconvenient to deal with, to the unchecked matchup
+   between this binding and the external C code it links to.
+*) 
 
 (**
  * Get the number of elements defined inside the structure.
@@ -922,6 +960,7 @@ PROCEDURE LLVMGetArrayLength(ArrayTy: TypeRef): unsigned;
  * exists in.
  *
  * @see llvm::PointerType::get()
+ * PRE: ElementType is not void, metadata, or label. 
  *)
 PROCEDURE LLVMPointerType
   (ElementType: TypeRef; AddressSpace: unsigned := 0): TypeRef;
@@ -1026,6 +1065,9 @@ PROCEDURE LLVMGetValueName(Val: ValueRef): const_char_star;
  * @see llvm::Value::setName()
  *)
 PROCEDURE LLVMSetValueName(Val: ValueRef; Name: const_char_star);
+
+<*EXTERNAL LLVMSetValueName*>
+PROCEDURE LLVMSetValueNameCHAR(Val: ValueRef; Name: UNTRACED REF CHAR);
 
 (**
  * Dump a representation of a value to stderr.
@@ -2655,7 +2697,7 @@ PROCEDURE LLVMPointerSize(T: TargetDataRef): unsigned;
     See the method llvm::TargetData::getIntPtrType. *)
 PROCEDURE LLVMIntPtrType(T: TargetDataRef): TypeRef;
 
-(** Computes the size of a type in bytes for a target.
+(** Computes the size of a type in bits for a target.
     See the method llvm::TargetData::getTypeSizeInBits. *)
 PROCEDURE LLVMSizeOfTypeInBits(T: TargetDataRef; Type: TypeRef): unsigned_long_long;
 
