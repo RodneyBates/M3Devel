@@ -2,9 +2,12 @@
 % This is the Modula-3 binding to the C binding to the llvm infrastructure. 
 
 import ("libm3")
+Module ("LLVMTypes") 
 Interface ("LLVM") 
+Interface ("M3DIB") 
 
 include_dir("llvmlibs")
 
 build_standalone ()
-Library ("M3LLVMCore")
+Library ("llvm")
+
