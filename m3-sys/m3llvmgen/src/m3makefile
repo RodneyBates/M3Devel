@@ -1,0 +1,50 @@
+% Copyright (C) 1994, Digital Equipment Corporation
+% All rights reserved.
+% See the file COPYRIGHT for a full description.
+%
+% Last modified on Wed Dec 14 14:42:15 PST 1994 by kalsow 
+%      modified on Mon Sep 26 14:44:07 PDT 1994 by isard 
+
+% m3_option ("-times")
+
+import ("libm3")
+import ("llvm") %Which has external decls for stuff in libLLVMCore. 
+import ("m3front")
+import ("m3middle")
+import ("m3back")
+
+%include_dir("../../llvm/src/llvmlibs") 
+% ^This will be pulled in from package llvm. 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% HACK ALERT! THE FOLLOWING TWO FILES ARE DEPRECATED
+% THEY ARE A MASSIVE HACK BECAUSE THE INTEGRATED BACK-END (m3back)
+%  ????? Is this also true of the llvm back-end (m3llvm)?  
+% CONTAINS SIGNIFICANT CONFUSION REGARDING TARGET INTEGER TYPES
+% THEY SHOULD BE REMOVED AS SOON AS SOMEONE CAN FIX m3back
+%Module ("TIntN") % duplicates copies found in m3back 
+%Module ("TWordN") % duplicates copies found in m3back
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+interface("LLVMTypeRef") 
+build_generic_intf("IntLLVMTypeRefTbl","Table",["Integer","LLVMTypeRef"],VISIBLE)
+build_generic_impl("IntLLVMTypeRefTbl","Table",["Integer","LLVMTypeRef"])
+
+interface("LLType") 
+build_generic_intf("IntLLTypeTbl","Table",["Integer","LLType"],VISIBLE)
+build_generic_impl("IntLLTypeTbl","Table",["Integer","LLType"])
+
+Module("LLInit") 
+Module("LLTypes") 
+Module("LLUnsafeLLVMTypeRef") 
+Module("LLGen") 
+Module("LLCode") 
+Module("LLStack") 
+Module("LLWr") 
+
+%import_lib("M3LLVMCore") 
+%import_lib("LLVMCore") 
+
+build_standalone ()
+Library ("m3llvmgen")
+
