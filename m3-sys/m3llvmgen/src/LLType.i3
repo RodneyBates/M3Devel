@@ -1,7 +1,7 @@
 
 (* Copyright (C) 2015, Rodney M. Bates                         *) 
 (* All rights reserved.                                        *) 
-(* See the file COPYRIGHT for a full description.              *) 
+(* See the file COPYRIGHT.RMB a full description.              *) 
 (*                                                             *) 
  
 INTERFACE LLType
