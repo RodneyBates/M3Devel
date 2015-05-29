@@ -48,8 +48,6 @@ module ("Msg")
 module ("Utils")
 module ("WebFile")
 
-import_lib("M3LLVMCBindings","/usr/local/lib")
-
 implementation ("Main")
 
 %build_standalone () %-- we don't want to depend on the shared libraries...
